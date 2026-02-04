@@ -1,0 +1,21 @@
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+
+
+
+-- NS 4/3/2019
+CREATE FUNCTION [dbo].[webservices2_iscomplete] 
+(
+	@requestid INT
+)
+RETURNS INT
+BEGIN
+	DECLARE @RESULT int
+	SELECT @RESULT=CASE WHEN processed IS NOT NULL THEN 1 ELSE 0 END FROM dbo.webservices_requests WHERE id=@requestid
+	RETURN @RESULT
+END
+
+
+GO

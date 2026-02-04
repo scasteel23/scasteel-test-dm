@@ -1,0 +1,34 @@
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS OFF
+GO
+
+-- NS 12/6/2021
+CREATE FUNCTION [dbo].[DM_OUTLOOK_fn_Get_Facstaff_RANK](@FSID INT)
+	RETURNS VARCHAR(100)
+	AS
+BEGIN
+
+		-- print dbo.DM_OUTLOOK_fn_Get_Facstaff_RANK (90)
+		DECLARE @Rank VARCHAR(100) 
+
+		
+		SET @Rank = '' 
+		
+
+		SELECT @Rank= a.RANK
+		FROM dbo._DM_ADMIN a
+				INNER JOIN 
+					(
+						SELECT FACSTAFFID, MAX(AC_YEAR) AS AC_YEAR
+						FROM dbo._DM_ADMIN
+						GROUP BY FACSTAFFID, AC_YEAR
+					)amax
+				ON a.FACSTAFFID=amax.FACSTAFFID
+					AND a.AC_YEAR = amax.AC_YEAR
+		WHERE a.FACSTAFFID = @FSID
+
+
+		RETURN(@Rank)
+	END
+GO

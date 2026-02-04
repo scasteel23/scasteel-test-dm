@@ -1,0 +1,32 @@
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS OFF
+GO
+
+
+-- NS 2/16/2007
+
+
+CREATE FUNCTION [dbo].[OUTLOOK_fn_Get_Facstaff_Addresses_StateCode](@FSID INT, @ACode INT)
+	RETURNS VARCHAR(100)
+	AS
+BEGIN
+
+DECLARE @STATE_CODE VARCHAR(5) 
+
+SET @STATE_CODE = ''   
+
+SELECT @STATE_CODE = FSA.State
+FROM  dbo.Facstaff_Addresses FSA  	
+WHERE   FSA.Facstaff_ID = @FSID AND 
+	FSA.Address_Type_Code = @ACode  AND
+	FSA.Active_Indicator = 1
+
+IF  @STATE_CODE IS NULL
+	SET  @STATE_CODE = ''
+	
+RETURN(@STATE_CODE)
+END
+
+
+GO

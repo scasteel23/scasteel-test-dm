@@ -1,0 +1,405 @@
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+
+-- STC 12/2/21 -- Added USERNAME to MERGE INSERT
+-- 11/22/2021
+-- NS 11/30/2016
+CREATE PROCEDURE [dbo].[DailyUpdate_sp_DM_Step09_Reset_UPLOAD_DM_BANNER_copy_to_DM_BANNER]
+AS
+
+	BEGIN TRY
+			-- NS 11/22/2021 for now UPDATE -- EMPEE_GROUP_DESC in ('Grads and Predoc Fellows','Postdoc Fellow/ResAssoc/Intrn')
+			-- NS 12/1/2021 for now UPDATE  -- EMPEE_GROUP_DESC in ('Retiree/Annuitant')
+		   ;WITH retiree1 as  (
+			  SELECT  DISTINCT emps.EMPEE_GROUP_DESC, emps.EMPEE_GROUP_CD, emps.EMPEE_CLS_CD, emps.EMPEE_CLS_LONG_DESC
+					  ,emps.EMPEE_TERMN_DT, emps.LAST_WORK_DT
+					  ,emps.Network_ID
+					  ,usr.FACSTAFFID
+					  ,usr.EDWPERSID
+					  ,usr.UIN
+					  ,EDW_Database
+					  ,PERS_PREFERRED_FNAME
+					  ,PERS_FNAME
+					  ,PERS_MNAME
+					  ,PERS_LNAME
+					  ,BIRTH_DT
+					  ,SEX_CD
+					  ,RACE_ETH_DESC
+					  ,PERS_CITZN_TYPE_DESC
+					  ,EMPEE_CAMPUS_CD
+					  ,EMPEE_CAMPUS_NAME
+					  ,EMPEE_COLL_CD
+					  ,EMPEE_COLL_NAME
+					  ,EMPEE_DEPT_CD
+					  ,EMPEE_DEPT_NAME
+					  --,JOB_DETL_TITLE
+
+			  FROM  dbo._DM_Users usr
+					INNER JOIN dbo._DM_PCI pci
+					ON usr.USERNAME = pci.USERNAME 
+						AND pci.ACTIVE = 'Yes'
+					INNER JOIN [DM_Shadow_Staging].[dbo].FSDB_EDW_Current_Employees emps
+					ON usr.username = emps.Network_ID
+						AND emps.EMPEE_GROUP_DESC in ('Retiree/Annuitant')
+						AND emps.New_Download_Indicator=1
+
+			  WHERE usr.USERNAME IS NOT NULL
+					AND  usr.Enabled_Indicator=1
+		   
+		   )
+		 ,retiree2 as (
+			SELECT  DISTINCT emps.EMPEE_GROUP_DESC, emps.EMPEE_GROUP_CD, emps.EMPEE_CLS_CD, emps.EMPEE_CLS_LONG_DESC
+					  ,NULL as EMPEE_TERMN_DT
+					  ,NULL as LAST_WORK_DT
+					  ,emps.Network_ID
+					  ,usr.FACSTAFFID
+					  ,usr.EDWPERSID
+					  ,usr.UIN
+					  ,'HR' EDW_Database
+					  ,PERS_PREFERRED_FNAME
+					  ,usr.First_Name
+					  ,PERS_MNAME
+					  ,usr.Last_Name
+					  ,Birth_Date
+					  ,pci.GENDER
+					  ,'' RACE_ETH_DESC
+					  ,PERS_CITZN_TYPE_DESC
+					  ,'100' EMPEE_CAMPUS_CD
+					  ,'Urbana-Champaign Campus' EMPEE_CAMPUS_NAME
+					  ,'KM' EMPEE_COLL_CD
+					  ,'Gies College of Business' EMPEE_COLL_NAME
+					  ,emps.EMPEE_DEPT_CD
+					  ,emps.EMPEE_DEPT_NAME
+					  --,JOB_DETL_TITLE
+
+			  FROM  dbo._DM_Users usr
+					INNER JOIN dbo._DM_PCI pci
+					ON usr.USERNAME = pci.USERNAME 
+						AND pci.ACTIVE = 'Yes'
+					INNER JOIN [DM_Shadow_Staging].[dbo].FSDB_Facstaff_Basic emps
+					ON usr.username = emps.Network_ID
+						AND emps.EMPEE_GROUP_DESC in ('Retiree/Annuitant')
+						AND usr.Enabled_Indicator=1
+
+			  WHERE usr.USERNAME IS NOT NULL
+					AND  usr.Enabled_Indicator=1
+					AND usr.USERNAME NOT IN (SELECT Network_ID from retiree1)
+		   )
+		   ,currentEmps AS (
+			 SELECT  DISTINCT emps.EMPEE_GROUP_DESC, emps.EMPEE_GROUP_CD, emps.EMPEE_CLS_CD, emps.EMPEE_CLS_LONG_DESC
+					  ,emps.EMPEE_TERMN_DT, emps.LAST_WORK_DT
+					  ,emps.Network_ID
+					  ,usr.FACSTAFFID
+					  ,usr.EDWPERSID
+					  ,usr.UIN
+					  ,EDW_Database
+					  ,PERS_PREFERRED_FNAME
+					  ,PERS_FNAME
+					  ,PERS_MNAME
+					  ,PERS_LNAME
+					  ,BIRTH_DT
+					  ,SEX_CD
+					  ,RACE_ETH_DESC
+					  ,PERS_CITZN_TYPE_DESC
+					  ,EMPEE_CAMPUS_CD
+					  ,EMPEE_CAMPUS_NAME
+					  ,EMPEE_COLL_CD
+					  ,EMPEE_COLL_NAME
+					  ,EMPEE_DEPT_CD
+					  ,EMPEE_DEPT_NAME
+					  --,JOB_DETL_TITLE
+
+			  FROM  dbo._DM_Users usr
+					INNER JOIN dbo._DM_PCI pci
+					ON usr.USERNAME = pci.USERNAME 
+						AND pci.ACTIVE = 'Yes'
+					INNER JOIN [DM_Shadow_Staging].[dbo].FSDB_EDW_Current_Employees emps
+					ON usr.username = emps.Network_ID
+						AND emps.EMPEE_GROUP_DESC in ('Grads and Predoc Fellows','Postdoc Fellow/ResAssoc/Intrn')
+						AND emps.New_Download_Indicator=1
+			  WHERE usr.USERNAME IS NOT NULL
+
+			  UNION
+	  
+			  SELECT  * FROM retiree1
+
+			  UNION 
+			   
+			  SELECT  * FROM retiree2 
+			 
+
+		   )
+
+		   MERGE INTO dbo._DM_BANNER as TARGET
+			USING (SELECT * FROM currentEmps) as SOURCE
+			ON target.Network_ID = source.network_ID
+		   WHEN MATCHED THEN  UPDATE 
+				 SET EMPEE_GROUP_DESC=source.EMPEE_GROUP_DESC
+					,EMPEE_GROUP_CD=source.EMPEE_GROUP_CD
+					,EMPEE_CLS_LONG_DESC = source.EMPEE_CLS_LONG_DESC
+					,EMPEE_CLS_CD = source.EMPEE_CLS_CD
+					--,JOB_DETL_TITLE = source.JOB_DETL_TITLE
+
+					,EMPEE_CAMPUS_CD=source.EMPEE_CAMPUS_CD
+					,EMPEE_CAMPUS_NAME=source.EMPEE_CAMPUS_NAME
+					,EMPEE_COLL_CD=source.EMPEE_COLL_CD
+					,EMPEE_COLL_NAME=source.EMPEE_COLL_NAME
+					,EMPEE_DEPT_CD=source.EMPEE_DEPT_CD
+					,EMPEE_DEPT_NAME=source.EMPEE_DEPT_NAME
+		
+		   WHEN NOT MATCHED BY TARGET THEN 
+				INSERT (USERNAME,  Network_ID, EMPEE_GROUP_DESC, EMPEE_GROUP_CD, EMPEE_CLS_LONG_DESC, EMPEE_CLS_CD 
+						  ,FACSTAFFID
+						  ,EDWPERSID
+						  ,UIN
+						  ,EDW_Database
+						  ,PERS_PREFERRED_FNAME
+						  ,PERS_FNAME
+						  ,PERS_MNAME
+						  ,PERS_LNAME
+						  ,BIRTH_DT
+						  ,SEX_CD
+						  ,RACE_ETH_DESC
+						  ,PERS_CITZN_TYPE_DESC
+						  ,EMPEE_CAMPUS_CD
+						  ,EMPEE_CAMPUS_NAME
+						  ,EMPEE_COLL_CD
+						  ,EMPEE_COLL_NAME
+						  ,EMPEE_DEPT_CD
+						  ,EMPEE_DEPT_NAME
+						  --,JOB_DETL_TITLE
+						  )
+				VALUES (Network_ID,  Network_ID, EMPEE_GROUP_DESC, EMPEE_GROUP_CD, EMPEE_CLS_LONG_DESC, EMPEE_CLS_CD
+						  ,FACSTAFFID
+						  ,EDWPERSID
+						  ,UIN
+						  ,EDW_Database
+						  ,PERS_PREFERRED_FNAME
+						  ,PERS_FNAME
+						  ,PERS_MNAME
+						  ,PERS_LNAME
+						  ,BIRTH_DT
+						  ,SEX_CD
+						  ,RACE_ETH_DESC
+						  ,PERS_CITZN_TYPE_DESC
+						  ,EMPEE_CAMPUS_CD
+						  ,EMPEE_CAMPUS_NAME
+						  ,EMPEE_COLL_CD
+						  ,EMPEE_COLL_NAME
+						  ,EMPEE_DEPT_CD
+						  ,EMPEE_DEPT_NAME
+						  --,JOB_DETL_TITLE
+						  )
+		   WHEN NOT MATCHED BY SOURCE THEN 
+				 UPDATE
+				 SET [Download_Datetime] = getdate();
+	END TRY
+	BEGIN CATCH
+		PRINT ERROR_MESSAGE()
+	END CATCH
+	
+/*
+	-- UPDATE CURRENT EMPS
+	UPDATE dbo._DM_BANNER
+	SET PERS_PREFERRED_FNAME=UPLOAD.PERS_PREFERRED_FNAME
+      ,PERS_FNAME=UPLOAD.PERS_FNAME
+      ,PERS_MNAME=UPLOAD.PERS_MNAME
+      ,PERS_LNAME=UPLOAD.PERS_LNAME
+      ,BIRTH_DT=UPLOAD.BIRTH_DT
+      ,SEX_CD=UPLOAD.SEX_CD
+      ,RACE_ETH_DESC=UPLOAD.RACE_ETH_DESC
+      ,PERS_CITZN_TYPE_DESC=UPLOAD.PERS_CITZN_TYPE_DESC
+      ,EMPEE_CAMPUS_CD=UPLOAD.EMPEE_CAMPUS_CD
+      ,EMPEE_CAMPUS_NAME=UPLOAD.EMPEE_CAMPUS_NAME
+      ,EMPEE_COLL_CD=UPLOAD.EMPEE_COLL_CD
+      ,EMPEE_COLL_NAME=UPLOAD.EMPEE_COLL_NAME
+      ,EMPEE_DEPT_CD=UPLOAD.EMPEE_DEPT_CD
+      ,EMPEE_DEPT_NAME=UPLOAD.EMPEE_DEPT_NAME
+      ,JOB_DETL_TITLE=UPLOAD.JOB_DETL_TITLE
+      ,JOB_DETL_FTE=UPLOAD.JOB_DETL_FTE
+      ,JOB_CNTRCT_TYPE_DESC=UPLOAD.JOB_CNTRCT_TYPE_DESC
+      ,JOB_DETL_COLL_CD=UPLOAD.JOB_DETL_COLL_CD
+      ,JOB_DETL_COLL_NAME=UPLOAD.JOB_DETL_COLL_NAME
+      ,JOB_DETL_DEPT_CD=UPLOAD.JOB_DETL_DEPT_CD
+      ,JOB_DETL_DEPT_NAME=UPLOAD.JOB_DETL_DEPT_NAME
+      ,COA_CD=UPLOAD.COA_CD
+      ,ORG_CD=UPLOAD.ORG_CD
+      ,EMPEE_ORG_TITLE=UPLOAD.EMPEE_ORG_TITLE
+      ,EMPEE_CLS_CD=UPLOAD.EMPEE_CLS_CD
+      ,EMPEE_CLS_LONG_DESC=UPLOAD.EMPEE_CLS_LONG_DESC
+      ,EMPEE_GROUP_CD=UPLOAD.EMPEE_GROUP_CD
+      ,EMPEE_GROUP_DESC=UPLOAD.EMPEE_GROUP_DESC
+      ,EMPEE_RET_IND=UPLOAD.EMPEE_RET_IND
+      ,EMPEE_LEAVE_CATGRY_CD=UPLOAD.EMPEE_LEAVE_CATGRY_CD
+      ,EMPEE_LEAVE_CATGRY_DESC=UPLOAD.EMPEE_LEAVE_CATGRY_DESC
+      ,BNFT_CATGRY_CD=UPLOAD.BNFT_CATGRY_CD
+      ,BNFT_CATGRY_DESC=UPLOAD.BNFT_CATGRY_DESC
+      ,HR_CAMPUS_CD=UPLOAD.HR_CAMPUS_CD
+      ,HR_CAMPUS_NAME=UPLOAD.HR_CAMPUS_NAME
+      ,EMPEE_STATUS_CD=UPLOAD.EMPEE_STATUS_CD
+      ,EMPEE_STATUS_DESC=UPLOAD.EMPEE_STATUS_DESC
+      ,CAMPUS_JOB_DETL_FTE=UPLOAD.CAMPUS_JOB_DETL_FTE
+      ,COLLEGE_JOB_DETL_FTE=UPLOAD.COLLEGE_JOB_DETL_FTE
+      ,FAC_RANK_CD=UPLOAD.FAC_RANK_CD
+      ,FAC_RANK_DESC=UPLOAD.FAC_RANK_DESC
+      ,FAC_RANK_ACT_DT=UPLOAD.FAC_RANK_ACT_DT
+      ,FAC_RANK_DECN_DT=UPLOAD.FAC_RANK_DECN_DT
+      ,FAC_RANK_ACAD_TITLE=UPLOAD.FAC_RANK_ACAD_TITLE
+      ,FAC_RANK_EMRTS_STATUS_IND=UPLOAD.FAC_RANK_EMRTS_STATUS_IND
+      ,FIRST_HIRE_DT=UPLOAD.FIRST_HIRE_DT
+      ,CUR_HIRE_DT=UPLOAD.CUR_HIRE_DT
+      ,FIRST_WORK_DT=UPLOAD.FIRST_WORK_DT
+      ,LAST_WORK_DT=UPLOAD.LAST_WORK_DT
+      ,EMPEE_TERMN_DT=UPLOAD.EMPEE_TERMN_DT
+      ,Network_ID=UPLOAD.Network_ID
+      ,lastModified=getdate()
+  FROM DM_Shadow_Staging.dbo._UPLOAD_DM_BANNER UPLOAD,
+			DM_Shadow_Staging.dbo._DM_BANNER DM
+  WHERE UPLOAD.FACSTAFFID = DM.FACSTAFFID
+			AND UPLOAD.Record_Status IN ('CURR-EMPS', 'NEW-EMPS')
+
+
+
+  -- insert NEW EMPS
+  INSERT INTO DM_Shadow_Staging.dbo._DM_BANNER (
+      USERNAME
+      ,FACSTAFFID
+      ,EDWPERSID
+      ,UIN
+      ,EDW_Database
+      ,PERS_PREFERRED_FNAME
+      ,PERS_FNAME
+      ,PERS_MNAME
+      ,PERS_LNAME
+      ,BIRTH_DT
+      ,SEX_CD
+      ,RACE_ETH_DESC
+      ,PERS_CITZN_TYPE_DESC
+      ,EMPEE_CAMPUS_CD
+      ,EMPEE_CAMPUS_NAME
+      ,EMPEE_COLL_CD
+      ,EMPEE_COLL_NAME
+      ,EMPEE_DEPT_CD
+      ,EMPEE_DEPT_NAME
+      ,JOB_DETL_TITLE
+      ,JOB_DETL_FTE
+      ,JOB_CNTRCT_TYPE_DESC
+      ,JOB_DETL_COLL_CD
+      ,JOB_DETL_COLL_NAME
+      ,JOB_DETL_DEPT_CD
+      ,JOB_DETL_DEPT_NAME
+      ,COA_CD
+      ,ORG_CD
+      ,EMPEE_ORG_TITLE
+      ,EMPEE_CLS_CD
+      ,EMPEE_CLS_LONG_DESC
+      ,EMPEE_GROUP_CD
+      ,EMPEE_GROUP_DESC
+      ,EMPEE_RET_IND
+      ,EMPEE_LEAVE_CATGRY_CD
+      ,EMPEE_LEAVE_CATGRY_DESC
+      ,BNFT_CATGRY_CD
+      ,BNFT_CATGRY_DESC
+      ,HR_CAMPUS_CD
+      ,HR_CAMPUS_NAME
+      ,EMPEE_STATUS_CD
+      ,EMPEE_STATUS_DESC
+      ,CAMPUS_JOB_DETL_FTE
+      ,COLLEGE_JOB_DETL_FTE
+      ,FAC_RANK_CD
+      ,FAC_RANK_DESC
+      ,FAC_RANK_ACT_DT
+      ,FAC_RANK_DECN_DT
+      ,FAC_RANK_ACAD_TITLE
+      ,FAC_RANK_EMRTS_STATUS_IND
+      ,FIRST_HIRE_DT
+      ,CUR_HIRE_DT
+      ,FIRST_WORK_DT
+      ,LAST_WORK_DT
+      ,EMPEE_TERMN_DT
+      ,Network_ID
+      ,lastModified
+      ,Create_Datetime)
+SELECT   Network_ID
+      ,FACSTAFFID
+      ,EDWPERSID
+      ,UIN
+      ,EDW_Database
+      ,PERS_PREFERRED_FNAME
+      ,PERS_FNAME
+      ,PERS_MNAME
+      ,PERS_LNAME
+      ,BIRTH_DT
+      ,SEX_CD
+      ,RACE_ETH_DESC
+      ,PERS_CITZN_TYPE_DESC
+      ,EMPEE_CAMPUS_CD
+      ,EMPEE_CAMPUS_NAME
+      ,EMPEE_COLL_CD
+      ,EMPEE_COLL_NAME
+      ,EMPEE_DEPT_CD
+      ,EMPEE_DEPT_NAME
+      ,JOB_DETL_TITLE
+      ,JOB_DETL_FTE
+      ,JOB_CNTRCT_TYPE_DESC
+      ,JOB_DETL_COLL_CD
+      ,JOB_DETL_COLL_NAME
+      ,JOB_DETL_DEPT_CD
+      ,JOB_DETL_DEPT_NAME
+      ,COA_CD
+      ,ORG_CD
+      ,EMPEE_ORG_TITLE
+      ,EMPEE_CLS_CD
+      ,EMPEE_CLS_LONG_DESC
+      ,EMPEE_GROUP_CD
+      ,EMPEE_GROUP_DESC
+      ,EMPEE_RET_IND
+      ,EMPEE_LEAVE_CATGRY_CD
+      ,EMPEE_LEAVE_CATGRY_DESC
+      ,BNFT_CATGRY_CD
+      ,BNFT_CATGRY_DESC
+      ,HR_CAMPUS_CD
+      ,HR_CAMPUS_NAME
+      ,EMPEE_STATUS_CD
+      ,EMPEE_STATUS_DESC
+      ,CAMPUS_JOB_DETL_FTE
+      ,COLLEGE_JOB_DETL_FTE
+      ,FAC_RANK_CD
+      ,FAC_RANK_DESC
+      ,FAC_RANK_ACT_DT
+      ,FAC_RANK_DECN_DT
+      ,FAC_RANK_ACAD_TITLE
+      ,FAC_RANK_EMRTS_STATUS_IND
+      ,FIRST_HIRE_DT
+      ,CUR_HIRE_DT
+      ,FIRST_WORK_DT
+      ,LAST_WORK_DT
+      ,EMPEE_TERMN_DT
+      ,Network_ID
+      ,Last_Update_Datetime
+      ,Create_Datetime
+  FROM DM_Shadow_Staging.dbo._UPLOAD_DM_BANNER
+  WHERE Record_Status <> 'END-EMPS'
+	AND FACSTAFFID NOT IN (SELECT FACSTAFFID FROM dbo._DM_USERS)
+	
+
+
+
+  -- Mark TERMINATED EMPS
+  UPDATE dbo._DM_BANNER
+  SET EMPEE_TERMN_DT = UPLOAD.EMPEE_TERMN_DT
+			  ,LAST_WORK_DT = UPLOAD.LAST_WORK_DT
+  FROM  DM_Shadow_Staging.dbo._UPLOAD_DM_BANNER UPLOAD,
+			DM_Shadow_Staging.dbo._DM_BANNER DM
+  WHERE UPLOAD.FACSTAFFID = DM.FACSTAFFID
+			AND UPLOAD.Record_Status = 'END-EMPS'
+
+
+
+	*/
+
+
+	
+GO

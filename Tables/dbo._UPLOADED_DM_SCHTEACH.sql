@@ -1,0 +1,30 @@
+CREATE TABLE [dbo].[_UPLOADED_DM_SCHTEACH]
+(
+[Create_Datetime] [datetime] NULL,
+[Term_CD] [varchar] (6) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[ID] [bigint] NULL,
+[FACSTAFFID] [int] NULL,
+[EDWPERSID] [varchar] (12) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[CHOURS_SECT_BASE] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[ENROLL_SECT_BASE] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[USERNAME] [varchar] (60) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[TYT_TERM] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[TYY_TERM] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[TERM_START] [varchar] (30) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[TERM_END] [varchar] (30) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[TITLE] [varchar] (100) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[COURSEPRE] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[COURSENUM] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[TYPE] [varchar] (100) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[SECTION] [varchar] (60) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[ENROLL] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[CHOURS] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[LEVEL] [varchar] (20) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[DELIVERY_MODE] [varchar] (1000) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[CRS_ID] [varchar] (20) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[CRN] [varchar] (20) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[ICES_RESPONDENTS] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[ICES1] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[ICES2] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL
+) ON [PRIMARY]
+GO

@@ -1,0 +1,76 @@
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+/****** Script for SelectTopNRows command from SSMS  ******/
+
+-- NS 4/20/2017
+CREATE PROC [dbo].[Adhoc_sp_Get_Duplicates_UPLOAD_DM_BANNER]
+AS
+SELECT [EDWPERSID]
+      ,[USERNAME]
+      ,[UIN]
+      ,[EDW_Database]
+      ,[PERS_PREFERRED_FNAME]
+      ,[PERS_FNAME]
+      ,[PERS_MNAME]
+      ,[PERS_LNAME]
+      ,[BIRTH_DT]
+      ,[SEX_CD]
+      ,[RACE_ETH_DESC]
+      ,[PERS_CITZN_TYPE_DESC]
+      ,[EMPEE_CAMPUS_CD]
+      ,[EMPEE_CAMPUS_NAME]
+      ,[EMPEE_COLL_CD]
+      ,[EMPEE_COLL_NAME]
+      ,[EMPEE_DEPT_CD]
+      ,[EMPEE_DEPT_NAME]
+      ,[JOB_DETL_TITLE]
+      ,[JOB_DETL_FTE]
+      ,[JOB_CNTRCT_TYPE_DESC]
+      ,[JOB_DETL_COLL_CD]
+      ,[JOB_DETL_COLL_NAME]
+      ,[JOB_DETL_DEPT_CD]
+      ,[JOB_DETL_DEPT_NAME]
+      ,[COA_CD]
+      ,[ORG_CD]
+      ,[EMPEE_ORG_TITLE]
+      ,[EMPEE_CLS_CD]
+      ,[EMPEE_CLS_LONG_DESC]
+      ,[EMPEE_GROUP_CD]
+      ,[EMPEE_GROUP_DESC]
+      ,[EMPEE_RET_IND]
+      ,[EMPEE_LEAVE_CATGRY_CD]
+      ,[EMPEE_LEAVE_CATGRY_DESC]
+      ,[BNFT_CATGRY_CD]
+      ,[BNFT_CATGRY_DESC]
+      ,[HR_CAMPUS_CD]
+      ,[HR_CAMPUS_NAME]
+      ,[EMPEE_STATUS_CD]
+      ,[EMPEE_STATUS_DESC]
+      ,[CAMPUS_JOB_DETL_FTE]
+      ,[COLLEGE_JOB_DETL_FTE]
+      ,[FAC_RANK_CD]
+      ,[FAC_RANK_DESC]
+      ,[FAC_RANK_ACT_DT]
+      ,[FAC_RANK_DECN_DT]
+      ,[FAC_RANK_ACAD_TITLE]
+      ,[FAC_RANK_EMRTS_STATUS_IND]
+      ,[FIRST_HIRE_DT]
+      ,[CUR_HIRE_DT]
+      ,[FIRST_WORK_DT]
+      ,[LAST_WORK_DT]
+      ,[EMPEE_TERMN_DT]
+      ,[Network_ID]
+      --,[Record_Status]
+      --,[Update_Status]
+      --,[Create_Datetime]
+      --,[Last_Update_Datetime]
+  FROM [DM_Shadow_Staging].[dbo]._UPLOAD_DM_BANNER
+  WHERE EDWPERSID IN 
+	  (SELECT [EDWPERSID]
+	  FROM [DM_Shadow_Staging].[dbo]._UPLOAD_DM_BANNER
+	  GROUP BY [EDWPERSID]
+	  HAVING COUNT(*) > 1 )
+  ORDER BY EDWPERSID
+GO

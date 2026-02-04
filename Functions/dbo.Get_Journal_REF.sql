@@ -1,0 +1,51 @@
+SET QUOTED_IDENTIFIER OFF
+GO
+SET ANSI_NULLS OFF
+GO
+
+-- NS 3/20/2017
+CREATE FUNCTION [dbo].[Get_Journal_REF]
+	(
+		@FSDB_Journal_ID int
+	)
+	RETURNS VARCHAR(50)
+	AS
+BEGIN
+	
+	DECLARE @DM_ID VARCHAR(50)
+	
+
+	SET @DM_ID = NULL
+
+	SELECT @DM_ID=[ID]
+	FROM [dbo].[JOURNAL]
+	WHERE [Journal_ID] = @FSDB_Journal_ID
+
+	IF @DM_ID IS NULL
+		SET @DM_ID = '-1'
+			
+	RETURN(@DM_ID)
+END
+
+
+/*
+DECLARE @SomeID VARCHAR(500)
+SET @SomeID = dbo.Get_Profile_URL ('nhadi')
+PRINT @SomeID
+
+
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+GO

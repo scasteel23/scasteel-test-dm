@@ -1,0 +1,3 @@
+CREATE ROLE [Education]
+AUTHORIZATION [dbo]
+GO

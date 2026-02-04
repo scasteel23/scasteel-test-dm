@@ -1,0 +1,10 @@
+CREATE TABLE [dbo].[DM_Ethnicity_Codes]
+(
+[RACE_ETH_CD] [varchar] (2) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+[RACE_ETH_CD_HIST_EFF_DT] [datetime] NOT NULL,
+[RACE_ETH_CD_EXP_DT] [datetime] NOT NULL,
+[RACE_ETH_CD_CUR_INFO_IND] [varchar] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+[RACE_ETH_CD_HIST_POST_DT] [datetime] NOT NULL,
+[RACE_ETH_DESC] [varchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL
+) ON [PRIMARY]
+GO

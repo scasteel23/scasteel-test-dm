@@ -1,0 +1,43 @@
+CREATE TABLE [dbo].[_DM_CONTACT]
+(
+[userid] [bigint] NULL,
+[id] [bigint] NOT NULL,
+[surveyID] [bigint] NULL,
+[termID] [bigint] NULL,
+[USERNAME] [varchar] (60) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[FACSTAFFID] [int] NULL,
+[EDWPERSID] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[BUILDING] [varchar] (100) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[ROOM] [varchar] (100) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[OPHONE1] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[OPHONE2] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[OPHONE3] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[MAILBOX] [varchar] (100) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[ADDL_BUILDING] [varchar] (100) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[ADDL_ROOM] [varchar] (100) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[ADDL_PHONE1] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[ADDL_PHONE2] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[ADDL_PHONE3] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[DIR_ADDRESS_DISPLAY] [varchar] (100) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[DIR_PHONE_DISPLAY] [varchar] (100) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[ADDRESS_DISPLAY] [varchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[PHONE_DISPLAY] [varchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[OFFICE_HOURS] [varchar] (100) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[APPT_ONLY] [varchar] (3) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[CAMPUS_EMAIL] [varchar] (100) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[ADDL_EMAIL] [varchar] (100) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[HOMEPAGE_WEB_ADDRESS] [varchar] (200) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[NAME] [varchar] (100) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[RELATION] [varchar] (100) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[EMERGENCY_PHONE1] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[EMERGENCY_PHONE2] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[EMERGENCY_PHONE3] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[EMERGENCY_PHONE4] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[EMERGENCY_EMAIL] [varchar] (100) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[lastModified] [datetime] NULL,
+[Create_datetime] [datetime] NULL,
+[Download_Datetime] [datetime] NULL
+) ON [PRIMARY]
+GO
+ALTER TABLE [dbo].[_DM_CONTACT] ADD CONSTRAINT [PK__DM_CONTACT] PRIMARY KEY CLUSTERED ([id]) ON [PRIMARY]
+GO
